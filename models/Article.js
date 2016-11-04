@@ -25,8 +25,7 @@ var ArticleSchema = new Schema({
     type:String,
     required:false
   },
-  // this only saves one note's ObjectId. ref refers to the Note model.
- notes: [{
+ note: [{
       // store ObjectIds in the array
       type: Schema.Types.ObjectId,
       // the ObjectIds will refer to the ids in the Note model
@@ -34,12 +33,6 @@ var ArticleSchema = new Schema({
   }]
 });
 
-//make it an array: (check exercise 7)
-
-// note: [{
-//       type: Schema.Types.ObjectId,
-//       ref: 'Note'
-//   }]
 
 // Create the Article model with the ArticleSchema
 var Article = mongoose.model('Article', ArticleSchema);

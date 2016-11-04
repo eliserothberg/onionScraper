@@ -7,41 +7,38 @@ var request = require('request');
 var cheerio = require('cheerio');
 
 app.use(logger('dev'));
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: false
 }));
 
-// make public a static dir
 app.use(express.static('public'));
 
-
-// Database configuration with mongoose
 mongoose.connect('mongodb://localhost/onionScraper');
 var db = mongoose.connection;
 
-// show any mongoose errors
 db.on('error', function(err) {
   console.log('Mongoose Error: ', err);
 });
 
-// once logged in to the db through mongoose, log a success message
 db.once('open', function() {
   console.log('Mongoose connection successful.');
 });
 
-
-// And we bring in our Note and Article models
 var Note = require('./models/Note.js');
 var Article = require('./models/Article.js');
 
+app.get('/', function(req, res) {
+  res.send(index.html);
+});
+
 // GET request to scrape the Onion website.
 app.get('/scrape', function(req, res) {
-	// first, we grab the body of the html with request
+	// get html
   request('http://www.theonion.com/', function(error, response, html) {
-  	// then, we load that into cheerio and save it to $ for a shorthand selector
+  	// load cheerio
     var $ = cheerio.load(html);
-    // now, we grab every h2 within an article tag, and do the following:
+    
     $('h2.headline').each(function(i, element) {
       var result = {};
       var data = $(this);
@@ -54,35 +51,36 @@ app.get('/scrape', function(req, res) {
       var image = data.parent().prev().children('img');
 
       //  save  as properties of the result obj
-      result.title = data.children().text();
+      result.title = data.children('a').text();
       result.link = data.children().attr('href');
-      result.summary = data.children().text();
+      result.summary = data.children('a').text();
       result.image = data.children('img');
-
 				
-			// pass the result object to the entry
-			var entry = new Article (result);
-				if (title && link) {
-			// now, save that entry to the db
-			entry.save(function(err, doc) {
-				// log any errors
-			  if (err) {
-			    console.log(err);
-			  } 
-			  // or log the doc
-			  else {
-			    console.log(doc);
-			  }
-			});
-		};
+				// pass the result object to the entry
+				var entry = new Article (result);
+ 				if (title && link) {
+				// now, save that entry to the db
+				entry.save(function(err, doc) {
+					// log any errors
+				  if (err) {
+				    console.log(err);
+				  } 
+				  // or log the doc
+				  else {
+				    console.log(doc);
+				  }
+				});
+			};
+    });
   });
-});
 
-res.redirect("/");
+  res.redirect("/");
 });
 
 // get the articles 
 app.get('/articles', function(req, res){
+    console.log("******************************* app.get('/articles',");
+
 	Article.find({}, function(err, doc){
 		// log any errors
 		if (err){
@@ -95,39 +93,61 @@ app.get('/articles', function(req, res){
 	});
 });
 
-app.get('/articles/:id', function(req, res){
-	// finds  matching id in db
-	Article.findOne({'_id': req.params.id})
-	//  populate all of the notes associated with it.
-	.populate('note')
+app.get('/notes', function(req, res) {
+  console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% app.get('/notes',");
+  // find all notes in the note collection with our Note model
+  Note.find({}, function(err, doc) {
+    // send any errors to the browser
+    if (err) {
+      res.send(err);
+    } 
+    // or send the doc to the browser
+    else {
+      res.send(doc);
+    }
+  });
+});
 
-	.exec(function(err, doc){
-		// log any errors
-		if (err){
-			console.log(err);
-		} 
-		// or send the doc to the browser as a json object
-		else {
-			res.json(doc);
-		}
-	});
+app.get('/articles/:id', function(req, res){
+   console.log("========================== app.get('/articles/:id and req.params.id = " + req.params.id);
+  // finds  matching id in db
+  Article.findOne({'_id': req.params.id})
+  //  populate all of the notes associated with it.
+  .populate('note')
+
+  .exec(function(err, doc){
+    console.log(JSON.stringify(doc));
+    // log any errors
+    if (err){
+      console.log(err);
+    } 
+    // or send the doc to the browser as a json object
+    else {
+      res.json(doc);
+    }
+
+  });
 });
 
 // if no note exists for an article, make the posted note it's note.
+
+//THIS IS NO LONGER WORKING AND I HAVEN'T A CLUE AS TO WHY
 app.post('/articles/:id', function(req, res){
+console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~ app.post('/articles/:id and req.params.id = " + req.params.id);
 	// create a new note and pass the req.body to the entry.
 	var newNote = new Note(req.body);
 
 	// and save the new note the db
 	newNote.save(function(err, doc){
+
 		// log any errors
 		if(err){
 			console.log(err);
 		} 
 		else {
 			
-			Article.findOneAndUpdate({'_id': req.params.id}, {'note':doc._id})
-			// execute the above query
+			Article.findOneAndUpdate({'_id': req.params.id}, {$push: {'note':doc._id}})
+            // Article.findOneAndUpdate({'_id': req.params.id}, {'note':doc._id}, {new: true})
 			.exec(function(err, doc){
 
 				// log any errors
@@ -140,6 +160,28 @@ app.post('/articles/:id', function(req, res){
 			});
 		}
 	});
+});
+// Note.aggregate([
+//     {$group: {_id: '$_post', notes: {$push: '$body'}}}
+//     // ...
+//     ], function(err, result) {
+//         if (err)
+//            // error handling
+//         Note.populate(result, {path: "_id"}, function(err, ret) {
+//             if(err)
+//                 console.log(err);
+//             else
+//                 console.log(ret);
+//         });
+// });
+
+
+app.delete('/notes/:id', function (req, res) { 
+  Note.findById(req.params.article_id, function(note){ 
+    note.remove(); 
+    console.log("comment succesfully deleted!"); 
+    // res.redirect("back"); 
+  }); 
 });
 
 app.listen(3000, function() {
