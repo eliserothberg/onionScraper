@@ -7,6 +7,7 @@ $.getJSON('/articles', function(data) {
     + data[random].title + '<br />'+ data[random].link + '</p>');
 
   $("#addNote").data('id', data[random]._id);
+
 });
 
 // $(document).ready(function() {
@@ -22,6 +23,7 @@ $(document).on('click', 'p', function(){
   // $('#notes').empty();
   // location.reload();
   var thisId = $(this).attr('data-id');
+
   $.ajax({
     type: "GET",
     url: '/articles/' + thisId,
@@ -29,12 +31,12 @@ $(document).on('click', 'p', function(){
  
   //add note information to the page
   .done(function(data) {
-    getSaved();
+    // getSaved();
     console.log(data._id + " = data id");
     console.log(data.title + " = data title");
     if(data.note){
       for(var i = 0; i < data.note.length; i++) {
-        $('#noteArea').append("<p>" + data.note[i].body + '\n\n<button data-id="deleteNote">Delete Note</button></p>');
+        $('#noteArea').append("<p>" + data.note[i].body + '\n\n\n<button data-id="deleteNote">Delete</button></p>');
         // $('#noteArea').append("<p>" + data.note[i].body + "</p>");
         // console.log("data.note[i].body = " + data.note.body);
         // $(document).on('click', '#deleteNote', function(){
@@ -54,29 +56,45 @@ $(document).on('click', 'p', function(){
   
   });
    $('#noteArea').html('');
-   return true;
+   // return true;
 });
 
-//append a delete button with each note
 
 $(document).on('click', '#deleteNote', function(){
   
-  $(this).remove()
+//   $(this).remove()
 
-      console.log("---------------------------------- $(document).on('click', '#deleteNote'");
-var thisId = $(this).data('id');
-console.log("----------------------------thisId = " + thisId);
+//       console.log("---------------------------------- $(document).on('click', '#deleteNote'");
+// var thisId = $(this).data('id');
+// console.log("----------------------------thisId = " + thisId);
 
-//   // update note
-  $.ajax({
-    method: "DELETE",
-    url: "/articles/" + thisId,
-  })
+// //   // update note
+//   $.ajax({
+//     method: "DELETE",
+//     url: "/articles/" + thisId,
+//   })
 //   // clear note area
+var selected = $(this).parent();
+  // make an AJAX GET request to delete the specific note 
+  // this uses the data-id of the p-tag, which is linked to the specific note
+  $.ajax({
+    type: "GET",
+    url: '/delete/' + selected.data('id'), 
+
+    // on successful call
+    success: function(response){
+      // remove the p-tag from the DOM
+      selected.remove();
+      // clear the note and title inputs
+      $('#deleteNote').val("");
+      console.log("&-&-&-&-&&-&-&-&-&-&- selected.data._id = " + selected.data('_id'))
+    }
+  });
 
 });
 
 $(document).on('click', '#addNote', function(e){
+
       console.log("++++++++++++++++++++++++++++++ $(document).on('click', '#addNote'");
       e.preventDefault();
   // grab the id associated with the article from the submit button
@@ -93,10 +111,16 @@ $(document).on('click', '#addNote', function(e){
   })
   .done(function(data) {
 
+    $.ajax({
+    type: "GET",
+    url: '/notes/' + thisId,
+
+  })
+    //append 
     // log the response
     // console.log("(*&(*(*)D)*)*_ _)* _)* _*  _* _* data = " + body);
    
-    $('#notes').empty();
+    // $('#notes').empty();
      $('#noteEntry').val("");
     // return false;
   });

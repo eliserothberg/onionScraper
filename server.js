@@ -1,10 +1,33 @@
 var express = require('express');
-var app = express();
 var bodyParser = require('body-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose');
 var request = require('request'); 
 var cheerio = require('cheerio');
+var exphbs  = require('express-handlebars');
+var methodOverride = require('method-override'); // for deletes in express
+var path = require('path');
+
+
+var app = express();
+
+// app.engine('handlebars', exphbs({defaultLayout: 'main'}));
+// app.set('view engine', 'handlebars');
+
+app.use(methodOverride('_method'))
+app.engine('handlebars', exphbs({
+    defaultLayout: 'main'
+}));
+app.set('view engine', 'handlebars');
+// app.use(express.static(path.join(__dirname, 'public')));
+
+
+app.set('views', path.join(__dirname, 'views'));
+// var exphbs = require('express-handlebars');
+// app.engine('handlebars', exphbs({
+//     defaultLayout: 'main'
+// }));
+// app.set('view engine', 'handlebars');
 
 app.use(logger('dev'));
 // app.use(bodyParser.json());
@@ -12,9 +35,11 @@ app.use(bodyParser.urlencoded({
   extended: false
 }));
 
+
+
 app.use(express.static('public'));
 
-mongoose.connect('mongodb://localhost/onionScraper');
+mongoose.connect('mongodb://heroku_s0xtxhbt:5hh2mulkbf4j8hoevbatm4ife6@ds033126.mlab.com:33126/heroku_s0xtxhbt');
 var db = mongoose.connection;
 
 db.on('error', function(err) {
@@ -28,10 +53,22 @@ db.once('open', function() {
 var Note = require('./models/Note.js');
 var Article = require('./models/Article.js');
 
+
+ 
+
 app.get('/', function(req, res) {
-  res.send(index.html);
+  res.render('index');
 });
 
+// app.use(function(err, req, res, next) {
+//   // set locals, only providing error in development
+//   res.locals.message = err.message;
+//   res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+//   // render the error page
+//   res.status(err.status || 500);
+//   res.render('error');
+// });
 // GET request to scrape the Onion website.
 app.get('/scrape', function(req, res) {
 	// get html
@@ -51,7 +88,7 @@ app.get('/scrape', function(req, res) {
       var image = data.parent().prev().children('img');
 
       //  save  as properties of the result obj
-      result.title = data.children('a').text();
+      result.title = data.children().text();
       result.link = data.children().attr('href');
       result.summary = data.children('a').text();
       result.image = data.children('img');
@@ -184,6 +221,9 @@ app.delete('/notes/:id', function (req, res) {
   }); 
 });
 
-app.listen(3000, function() {
-  console.log('App running on port 3000!');
+var PORT = process.env.PORT || 3000;
+app.listen(PORT, function(){
+  console.log('App listening on PORT ' + PORT);
 });
+
+module.exports = app;
