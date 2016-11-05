@@ -32,8 +32,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-mongoose.connect('mongodb://localhost/onionScraper');
-// mongoose.connect('mongodb://heroku_s0xtxhbt:5hh2mulkbf4j8hoevbatm4ife6@ds033126.mlab.com:33126/heroku_s0xtxhbt');
+// mongoose.connect('mongodb://localhost/onionScraper');
+mongoose.connect('mongodb://heroku_s0xtxhbt:5hh2mulkbf4j8hoevbatm4ife6@ds033126.mlab.com:33126/heroku_s0xtxhbt');
 
 var db = mongoose.connection;
 
