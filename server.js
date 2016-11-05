@@ -39,7 +39,9 @@ app.use(bodyParser.urlencoded({
 
 app.use(express.static('public'));
 
-mongoose.connect('mongodb://heroku_s0xtxhbt:5hh2mulkbf4j8hoevbatm4ife6@ds033126.mlab.com:33126/heroku_s0xtxhbt');
+mongoose.connect('mongodb://localhost/onionScraper');
+// mongoose.connect('mongodb://heroku_s0xtxhbt:5hh2mulkbf4j8hoevbatm4ife6@ds033126.mlab.com:33126/heroku_s0xtxhbt');
+
 var db = mongoose.connection;
 
 db.on('error', function(err) {
@@ -168,7 +170,6 @@ app.get('/articles/:id', function(req, res){
 
 // if no note exists for an article, make the posted note it's note.
 
-//THIS IS NO LONGER WORKING AND I HAVEN'T A CLUE AS TO WHY
 app.post('/articles/:id', function(req, res){
 console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~ app.post('/articles/:id and req.params.id = " + req.params.id);
 	// create a new note and pass the req.body to the entry.
@@ -184,7 +185,6 @@ console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~ app.post('/articles/:id and req.params.
 		else {
 			
 			Article.findOneAndUpdate({'_id': req.params.id}, {$push: {'note':doc._id}})
-            // Article.findOneAndUpdate({'_id': req.params.id}, {'note':doc._id}, {new: true})
 			.exec(function(err, doc){
 
 				// log any errors
@@ -198,25 +198,11 @@ console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~ app.post('/articles/:id and req.params.
 		}
 	});
 });
-// Note.aggregate([
-//     {$group: {_id: '$_post', notes: {$push: '$body'}}}
-//     // ...
-//     ], function(err, result) {
-//         if (err)
-//            // error handling
-//         Note.populate(result, {path: "_id"}, function(err, ret) {
-//             if(err)
-//                 console.log(err);
-//             else
-//                 console.log(ret);
-//         });
-// });
-
 
 app.delete('/notes/:id', function (req, res) { 
-  Note.findById(req.params.article_id, function(note){ 
+  Note.findById(req.params._id, function(note){ 
     note.remove(); 
-    console.log("comment succesfully deleted!"); 
+    console.log("comment deleted"); 
     // res.redirect("back"); 
   }); 
 });

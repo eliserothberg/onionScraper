@@ -15,33 +15,33 @@
   {{#each scrapedOnionData}}
     <li>
       <p>
-        {{this._id}}. {{this.title}}. {{this.link}}
+        {{this.title}} 
+        </p>
+        >p{{this.link}}
         </p>
        <!--  <div id="articles"></div>
     <div id="notes"></div>
     <div id="postNotes"></div> -->
 <p>
-        <form action="/delete?_method=DELETE" method="POST">
-          <input type="hidden" name="deleteNote" value="{{this._id}}">
-          <button type="submit">Delete</button>
+       
+<button class="reset">Reset</button>
+</div>
+  <div id="wrapper">
+    <h1>The Onion</h1>
+    <h2><i>"America's Finest News Source"</i></h2>
+    <div id="articles"></div>
+        <h3>Click on the headline to see notes</h3>
+        <h3>Click  ><button class="reset">HERE</button><  to see a new story</h3>
+
+        <form id="userinput">
+        <input type="text" id="noteEntry" placeholder="Enter new note here"/>
+              <button type="submit" id="addNote">Add Note</button>
         </form>
-      </p>
-    </li>
-  {{/each}}
-</ul>
+          <br>
+    <div id="noteArea">
+<!--      <div id="bodyinput">
+ -->            <th><h4>Notes</h4></th>
 
-<form method="POST" action="/create" class="button-size">
-  <textarea type="text" name="article"></textarea>
-  <button type="submit">New Article!</button>
-</form>
-
-<h2>Update Notes</h2>
-<form action="/update?_method=PUT" method="POST" class="button-size">
-  <input type="text" name="id" placeholder="id">
-  <textarea type="text" name="notes" placeholder="what do you want to say?"></textarea>
-  <button type="submit">Post Note!</button>
-</form>
-    
   </div>
 
   </body>
