@@ -9,38 +9,31 @@ var methodOverride = require('method-override'); // for deletes in express
 var path = require('path');
 
 
+// instantiate our app
 var app = express();
 
-// app.engine('handlebars', exphbs({defaultLayout: 'main'}));
-// app.set('view engine', 'handlebars');
-
+// override POST to have DELETE and PUT
 app.use(methodOverride('_method'))
+
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+
+//set up handlebars
+var exphbs = require('express-handlebars');
 app.engine('handlebars', exphbs({
     defaultLayout: 'main'
 }));
 app.set('view engine', 'handlebars');
-// app.use(express.static(path.join(__dirname, 'public')));
 
-
-app.set('views', path.join(__dirname, 'views'));
-// var exphbs = require('express-handlebars');
-// app.engine('handlebars', exphbs({
-//     defaultLayout: 'main'
-// }));
-// app.set('view engine', 'handlebars');
-
+// uncomment after placing your favicon in /public
+//app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
-// app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-  extended: false
-}));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-
-
-app.use(express.static('public'));
-
-// mongoose.connect('mongodb://localhost/onionScraper');
-mongoose.connect('mongodb://heroku_s0xtxhbt:5hh2mulkbf4j8hoevbatm4ife6@ds033126.mlab.com:33126/heroku_s0xtxhbt');
+mongoose.connect('mongodb://localhost/onionScraper');
+// mongoose.connect('mongodb://heroku_s0xtxhbt:5hh2mulkbf4j8hoevbatm4ife6@ds033126.mlab.com:33126/heroku_s0xtxhbt');
 
 var db = mongoose.connection;
 
@@ -85,8 +78,8 @@ app.get('/scrape', function(req, res) {
       // save the text of each link enclosed in the current element
       var title = data.text();
       title = title.replace(/\n\r?/g, "").trim();
-      var link = data.children().attr('href');
-      var summary = data.prev().next('div.desc');
+      var link = data.children('a').attr('href');
+      var summary = data.parent().next().find('div.desc');
       var image = data.parent().prev().children('img');
 
       //  save  as properties of the result obj

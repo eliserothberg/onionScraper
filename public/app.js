@@ -4,7 +4,9 @@ $.getJSON('/articles', function(data) {
   var random = Math.floor(Math.random() * data.length + 1)
     
   $('#articles').append('<p data-id="' + data[random]._id + '">' 
-    + data[random].title + '<br /><br />'+ data[random].link + '</p>');
+    + data[random].title + '<br /><br />' + "http://www.theonion.com/" + data[random].link + '<br /><br />' 
+    // + data[random].summary + '<br /><br />' + data[random].image 
+    + '</p>');
 
   $("#addNote").data('id', data[random]._id);
 
